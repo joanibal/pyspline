@@ -12,7 +12,7 @@ import numpy
 # Extension modules
 # =============================================================================
 from mdo_regression_helper import *
-from pyspline import pySpline
+from .pyspline import pySpline
 
 def eval_test(crv):
     '''Eval fixed points from the curve'''

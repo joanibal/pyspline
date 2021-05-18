@@ -83,7 +83,7 @@ def writeTecplot2D(handle, name, data):
                 handle.write('%20.16g '%(data[i, j, idim]))
             handle.write('\n')
 
-def writeTecplot3D(handle, name, data):
+def writeTecplot3D(handle, name, data, solutionTime=None):
     """A Generic function to write a 3D data zone to a tecplot file.
 
     Parameters
@@ -100,6 +100,8 @@ def writeTecplot3D(handle, name, data):
     nz = data.shape[2]
     ndim = data.shape[3]
     handle.write('Zone T=\"%s\" I=%d J=%d K=%d\n' % (name, nx, ny, nz))
+    if solutionTime is not None:
+        handle.write('SOLUTIONTIME=%f\n' % (solutionTime))
     handle.write('DATAPACKING=POINT\n')
     for k in range(nz):
         for j in range(ny):
