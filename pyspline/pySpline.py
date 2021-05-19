@@ -39,7 +39,7 @@ class Error(Exception):
         print(msg)
         Exception.__init__()
 
-def writeTecplot1D(handle, name, data):
+def writeTecplot1D(handle, name, data, solutionTime=None):
     """A Generic function to write a 1D data zone to a tecplot file.
 
     Parameters
@@ -54,6 +54,8 @@ def writeTecplot1D(handle, name, data):
     nx = data.shape[0]
     ndim = data.shape[1]
     handle.write('Zone T=\"%s\" I=%d\n'%(name, nx))
+    if solutionTime is not None:
+        handle.write('SOLUTIONTIME=%f\n' % (solutionTime))
     handle.write('DATAPACKING=POINT\n')
     for i in range(nx):
         for idim in range(ndim):
@@ -3221,20 +3223,26 @@ MUST be defined for task lms or interpolate'
 
         return u.squeeze(), v.squeeze(), w.squeeze(), D.squeeze()
 
-    def computeData(self):
+    def computeData(self, recompute=False):
         """
         Compute discrete data that is used for the Tecplot
         Visualization as well as the data for doing the brute-force
         checks
         """
         # Only recompute if it doesn't exist already
-        if self.data is None:
-            self.edgeCurves[0].calcInterpolatedGrevillePoints()
-            self.udata = self.edgeCurves[0].sdata
-            self.edgeCurves[2].calcInterpolatedGrevillePoints()
-            self.vdata = self.edgeCurves[2].sdata
-            self.edgeCurves[8].calcInterpolatedGrevillePoints()
-            self.wdata = self.edgeCurves[8].sdata
+        if self.data is None or recompute:
+            if self.udata is None:
+                self.edgeCurves[0].calcInterpolatedGrevillePoints()
+                self.udata = self.edgeCurves[0].sdata
+            
+            if self.vdata is None:
+                self.edgeCurves[2].calcInterpolatedGrevillePoints()
+                self.vdata = self.edgeCurves[2].sdata
+            
+            if self.wdata is None:
+                self.edgeCurves[8].calcInterpolatedGrevillePoints()
+                self.wdata = self.edgeCurves[8].sdata
+                    
             U = numpy.zeros((len(self.udata), len(self.vdata), len(self.wdata)))
             V = numpy.zeros((len(self.udata), len(self.vdata), len(self.wdata)))
             W = numpy.zeros((len(self.udata), len(self.vdata), len(self.wdata)))
@@ -3244,6 +3252,7 @@ MUST be defined for task lms or interpolate'
                         U[i, j, k] = self.udata[i]
                         V[i, j, k] = self.vdata[j]
                         W[i, j, k] = self.wdata[k]
+                                        
             self.data = self.getValue(U, V, W)
 
     def insertKnot(self, direction, s, r):
